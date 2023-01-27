@@ -7,3 +7,4 @@ streamlit==1.17.0
 streamlit-option-menu==0.3.2
 streamlit-webrtc==0.44.2
 tensorflow==2.11.0
+simpleaudio==1.0.4
