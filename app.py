@@ -5,15 +5,23 @@ import numpy as np
 import cv2
 import av
 from streamlit_webrtc import webrtc_streamer
-import beepy
 from streamlit_option_menu import option_menu
 import threading
+import pygame
+import time
+
 
 
 model = load_model("drowiness_new6.h5")
 
 labels_new = ["yawn", "no_yawn"]
 IMG_SIZE = 145
+
+def play_audio(filename):
+    pygame.mixer.init()
+    pygame.mixer.music.load(filename)
+    pygame.mixer.music.set_volume(0.1)
+    pygame.mixer.music.play()
 
 def prepare(image_array, face_cas_path="haarcascade_frontalface_default.xml"):
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades+face_cas_path)
@@ -30,15 +38,20 @@ def prepare(image_array, face_cas_path="haarcascade_frontalface_default.xml"):
 def callback(frame):
     img = frame.to_ndarray(format="bgr24")
     img = np.array(img)
+    print(time.time())
     try:
         face = [prepare(img)[0]]
         location = prepare(img)[1]
         if np.array(face).any():
             prediction = model.predict(face)
+            print(time.time())
+
             if np.argmax(prediction) == 0:
                 str = "Drowsiness Alert!!"
-                threading.Thread(target=beepy.beep(1), args=(), daemon=True).start()
+                t = threading.Thread(target=play_audio, args=("alert.mp3",))
+                t.start()
             else:
+                d_count = 0
                 str = "Normal"
             print(str)
         if location != []:
@@ -72,7 +85,7 @@ if choose == "About This App":
     st.write("4. The system will try to search for your face and detect your drowsiness status")
 
 if choose == "Detector":
-    webrtc_streamer(
+        webrtc_streamer(
         key="example",
         video_frame_callback=callback,
         rtc_configuration={  # Add this line
