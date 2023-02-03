@@ -7,6 +7,7 @@ import av
 from streamlit_webrtc import webrtc_streamer
 import beepy
 from streamlit_option_menu import option_menu
+import threading
 
 
 model = load_model("drowiness_new6.h5")
@@ -36,7 +37,7 @@ def callback(frame):
             prediction = model.predict(face)
             if np.argmax(prediction) == 0:
                 str = "Drowsiness Alert!!"
-                beepy.beep(1)
+                threading.Thread(target=beepy.beep(1), args=(), daemon=True).start()
             else:
                 str = "Normal"
             print(str)
